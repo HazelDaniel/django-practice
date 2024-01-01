@@ -14,3 +14,9 @@ class Book(models.Model):
     title = models.CharField(max_length=70, help_text="title of the book")
     publication_date = models.DateField(verbose_name="Date the book was published")
     isbn = models.CharField(max_length=20, verbose_name="ISBN number of the book")
+
+class Contributor(models.Model):
+    """the class representation of the contributor table"""
+    first_names = models.CharField(max_length=50, help_text="The contributor's first name(s)")
+    last_names = models.CharField(max_length=50, help_text="The contributor's last name(s)")
+    email = models.EmailField(help_text="The contributor's contact email")
