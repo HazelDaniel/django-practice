@@ -1,45 +1,34 @@
 #!/usr/bin/env python3
 # Create your views here.
-from django.shortcuts import render
+from django.db.models import F
 from django.http import HttpResponse
 from django.template import loader
 from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse
+from django.views import generic
 from .models import Question, Choice
 
 
-def index(request):
-    """this is the view for the root route"""
-    try:
-        last_5_questions = Question.objects.order_by('-pub_date')[:5]
-    except Question.DoesNotExist:
-        raise Http404("the question(s) do(es) not exist")
-    index_template = loader.get_template("polls/index.html")
-    index_ctx = {"last_5_questions": last_5_questions}
-    # output = ("  ,".join([x.question_text for x in last_5_questions]))
-    return HttpResponse(index_template.render(index_ctx, request))
+class IndexView(generic.ListView):
+    """the class representation of the index view"""
+    template_name = "polls/index.html"
+    context_object_name = "latest_question_list"
+
+    def get_queryset(self):
+        """returns the last five published questions"""
+        return Question.objects.order_by("-pub_date")[:5]
 
 
-def detail(request, question_id=""):
-    """this is the view for the /polls/[SLUG] endpoint"""
-    try:
-        question = Question.objects.get(id=question_id)
-        detail_template = loader.get_template("polls/details.html")
-        detail_ctx = {"question": question}
-        return HttpResponse(detail_template.render(detail_ctx, request))
-    except Http404:
-        raise Http404("question not found")
+class DetailView(generic.DetailView):
+    """the class representation for the details view"""
+    model = Question
+    template_name = "polls/details.html"
 
 
-def results(request, question_id=""):
-    """this is the view for the /polls/[SLUG]results/ endpoint"""
-    try:
-        question = Question.objects.get(pk=question_id)
-        result_template = loader.get_template("polls/results.html")
-        result_ctx = {"question": question}
-        return HttpResponse(result_template.render(result_ctx, request))
-    except Question.DoesNotExist:
-        raise Http404("This is not a valid question")
+class ResultsView(generic.DetailView):
+    """the class representation for the results view"""
+    model = Question
+    template_name = "polls/results.html"
 
 
 def vote(request, question_id=""):
@@ -53,6 +42,7 @@ def vote(request, question_id=""):
     except (KeyError, Choice.DoesNotExist):
         raise Http404("you didn't select a valid choice")
     else:
-        selected_choice.votes += 1
+        selected_choice.votes = F('votes') + 1
         selected_choice.save()
+        selected_choice.refresh_from_db()
         return HttpResponseRedirect(reverse('polls:results', args=(question.id, )))
