@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Create your models here.
 from django.db import models
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+from django.utils import timezone
 
 
 class Question(models.Model):
@@ -12,7 +13,8 @@ class Question(models.Model):
     def was_published_recently(self):
         """this returns whether the
             question was recently published"""
-        return self.pub_date >= (timezone.now() - timedelta(days=1))
+        now = timezone.now()
+        return now - timezone.timedelta(days=1) <= self.pub_date <= now
 
     def __str__(self):
         """the string evaluation of this class"""
