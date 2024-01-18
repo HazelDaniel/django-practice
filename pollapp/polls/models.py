@@ -3,6 +3,7 @@
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
+from django.contrib import admin
 
 
 class Question(models.Model):
@@ -10,6 +11,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField(help_text="date published", verbose_name="the date the question was published")
 
+    @admin.display(boolean=None, description="was recently published?")
     def was_published_recently(self):
         """this returns whether the
             question was recently published"""
